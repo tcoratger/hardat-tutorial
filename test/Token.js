@@ -10,6 +10,7 @@ const { expect } = require("chai");
 // Using this simplifies your tests and makes them run faster, by taking
 // advantage of Hardhat Network's snapshot functionality.
 const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
+const { checkProperties } = require("ethers/lib/utils");
 
 // `describe` is a Mocha function that allows you to organize your tests.
 // Having your tests organized makes debugging them easier. All Mocha
@@ -30,7 +31,7 @@ describe("Token contract", function () {
     // To deploy our contract, we just have to call Token.deploy() and await
     // its deployed() method, which happens once its transaction has been
     // mined.
-    const hardhatToken = await Token.deploy();
+    const hardhatToken = await Token.deploy(35000);
 
     await hardhatToken.deployed();
 
@@ -54,12 +55,29 @@ describe("Token contract", function () {
 
       // This test expects the owner variable stored in the contract to be
       // equal to our Signer's owner.
+
+      // Owner obtenu avec fonction dans le smart contract
+      console.log("hardhat owner", await hardhatToken.owner());
+
+      //
+      console.log("owner address", owner.address);
+
       expect(await hardhatToken.owner()).to.equal(owner.address);
     });
 
     it("Should assign the total supply of tokens to the owner", async function () {
+
       const { hardhatToken, owner } = await loadFixture(deployTokenFixture);
+      
+      
+      
       const ownerBalance = await hardhatToken.balanceOf(owner.address);
+
+
+      console.log("owner balance", ownerBalance.toString());
+      console.log("total supply", (await hardhatToken.totalSupply()).toString());
+
+
       expect(await hardhatToken.totalSupply()).to.equal(ownerBalance);
     });
   });
@@ -70,6 +88,19 @@ describe("Token contract", function () {
         deployTokenFixture
       );
       // Transfer 50 tokens from owner to addr1
+
+      // balance avant
+      console.log('balance owner avant', (await hardhatToken.balanceOf(owner.address)).toString());
+      console.log('balance address1 avant', (await hardhatToken.balanceOf(addr1.address)).toString());
+
+      // Transaction affichage
+      console.log("transaction", await hardhatToken.transfer(addr1.address, 50));
+
+      // balance après
+      console.log('balance owner après', (await hardhatToken.balanceOf(owner.address)).toString());
+      console.log('balance address1 après', (await hardhatToken.balanceOf(addr1.address)).toString());
+
+
       await expect(
         hardhatToken.transfer(addr1.address, 50)
       ).to.changeTokenBalances(hardhatToken, [owner, addr1], [-50, 50]);
